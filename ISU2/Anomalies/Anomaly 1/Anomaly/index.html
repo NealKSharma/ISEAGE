@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrat's Eternal Struggle</title>
+    <style>
+        :root {
+            --ice-light: #e0f4ff;
+            --ice-mid: #74c0fc;
+            --ice-deep: #1971c2;
+            --frost-white: rgba(255, 255, 255, 0.6);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: radial-gradient(circle at center, var(--ice-mid) 0%, var(--ice-deep) 100%);
+            overflow: hidden;
+            cursor: none;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle, transparent 40%, rgba(255, 255, 255, 0.2) 70%, var(--ice-light) 110%);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .snow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .snowflake {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) translateX(20px);
+            }
+        }
+
+        #scrat {
+            position: fixed;
+            width: 200px;
+            height: 130px;
+            pointer-events: none;
+            z-index: 1000;
+            transform: translate(-50%, -50%);
+            transition: transform 0.05s linear;
+        }
+
+        #acorn {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            top: 50%;
+            left: 50%;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 999;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+            cursor: pointer;
+        }
+
+        .placeholder-text {
+            position: fixed;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            z-index: 10;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="snow" id="snow-field"></div>
+    <div class="placeholder-text">THE NUT IS LIFE.</div>
+
+    <img id="scrat" src="Scrat.webp" alt="Scrat">
+    <img id="acorn" src="acorn.jpg" alt="Acorn">
+
+    <script>
+        const scrat = document.getElementById('scrat');
+        const acorn = document.getElementById('acorn');
+        const snowField = document.getElementById('snow-field');
+        const threshold = 200;
+        const API = "https://acorn.isucdc.workers.dev/flag";
+
+        function createSnow() {
+            for (let i = 0; i < 50; i++) {
+                let flake = document.createElement('div');
+                flake.className = 'snowflake';
+                let size = Math.random() * 5 + 2 + 'px';
+                flake.style.width = size;
+                flake.style.height = size;
+                flake.style.left = Math.random() * 100 + 'vw';
+                flake.style.top = '-10px';
+                flake.style.animationDuration = Math.random() * 3 + 2 + 's';
+                flake.style.animationDelay = Math.random() * 5 + 's';
+                snowField.appendChild(flake);
+            }
+        }
+        createSnow();
+
+        acorn.addEventListener('click', async () => {
+            const res = await fetch(API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ key: "{key}" })
+            });
+            const data = await res.json();
+            alert("Scrat got the nut!");
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            scrat.style.left = e.clientX + 'px';
+            scrat.style.top = e.clientY + 'px';
+
+            const acornRect = acorn.getBoundingClientRect();
+            const acornX = acornRect.left + acornRect.width / 2;
+            const acornY = acornRect.top + acornRect.height / 2;
+
+            const distance = Math.sqrt(
+                Math.pow(e.clientX - acornX, 2) + Math.pow(e.clientY - acornY, 2)
+            );
+
+            if (distance < threshold) jumpAcorn();
+        });
+
+        function jumpAcorn() {
+            const padding = 150;
+            const newX = Math.random() * (window.innerWidth - padding * 2) + padding;
+            const newY = Math.random() * (window.innerHeight - padding * 2) + padding;
+            acorn.style.left = newX + 'px';
+            acorn.style.top = newY + 'px';
+            const randomRot = Math.random() * 360;
+            acorn.style.transform = `rotate(${randomRot}deg) scale(1.3)`;
+            setTimeout(() => {
+                acorn.style.transform = `rotate(${randomRot}deg) scale(1)`;
+            }, 100);
+        }
+    </script>
+</body>
+
+</html>
